@@ -97,21 +97,22 @@ func (c *Client) Send(entry model.NotifEntry) error {
 
 	// Prepare the state payload
 	var statePayload map[string]interface{}
-	if entry.Status == "new" {
+	switch entry.Status {
+	case "new":
 		statePayload = map[string]interface{}{
 			"state":           "New Image",
 			"current_version": entry.Image,
 			"new_version":     "",
 			"icon":            "mdi:package-variant",
 		}
-	} else if entry.Status == "update" {
+	case "update":
 		statePayload = map[string]interface{}{
 			"state":           "Update Available",
 			"current_version": entry.Image,
 			"new_version":     entry.Image,
 			"icon":            "mdi:package-up",
 		}
-	} else {
+	default:
 		statePayload = map[string]interface{}{
 			"state":           "No Update",
 			"current_version": entry.Image,

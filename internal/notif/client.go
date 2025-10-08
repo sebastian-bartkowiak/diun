@@ -9,7 +9,7 @@ import (
 	"github.com/crazy-max/diun/v4/internal/notif/discord"
 	"github.com/crazy-max/diun/v4/internal/notif/elasticsearch"
 	"github.com/crazy-max/diun/v4/internal/notif/gotify"
-	"github.com/crazy-max/diun/v4/internal/notif/homeassistant" 
+	"github.com/crazy-max/diun/v4/internal/notif/homeassistant"
 	"github.com/crazy-max/diun/v4/internal/notif/mail"
 	"github.com/crazy-max/diun/v4/internal/notif/matrix"
 	"github.com/crazy-max/diun/v4/internal/notif/mqtt"
