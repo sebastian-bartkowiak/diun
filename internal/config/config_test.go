@@ -110,6 +110,18 @@ func TestLoadFile(t *testing.T) {
 						TemplateTitle: model.NotifDefaultTemplateTitle,
 						TemplateBody:  model.NotifDefaultTemplateBody,
 					},
+					HomeAssistant: &model.NotifHomeAssistant{
+						Scheme:   "mqtt",
+						Host:     "localhost",
+						Port:     1883,
+						Username: "guest",
+						Password: "guest",
+						Client:   "diun",
+						DiscoveryPrefix: "homeassistant",
+						Component:       "sensor",
+						NodeName:        "diun",
+						QoS:      0,
+					},
 					Mail: &model.NotifMail{
 						Host:               "localhost",
 						Port:               25,

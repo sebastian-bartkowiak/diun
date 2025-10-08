@@ -51,6 +51,17 @@ notif:
     token: Token123456
     priority: 1
     timeout: 10s
+  homeassistant:
+    scheme: "mqtt"
+    host: "localhost"
+    port: 1883
+    username: "guest"
+    password: "guest"
+    client: "diun"
+    discoveryprefix: "homeassistant"
+    component: "sensor"
+    nodename: "diun"
+    qos: 0
   mail:
     host: localhost
     port: 25
