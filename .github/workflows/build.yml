@@ -17,8 +17,8 @@ on:
   pull_request:
 
 env:
-  DOCKERHUB_SLUG: crazymax/diun
-  GHCR_SLUG: ghcr.io/crazy-max/diun
+  DOCKERHUB_SLUG: sebastian-bartkowiak/diun
+  GHCR_SLUG: ghcr.io/sebastian-bartkowiak/diun
   DESTDIR: ./bin
   DOCKER_BUILD_SUMMARY: false
   SCOUT_VERSION: "1.18.2"
@@ -92,12 +92,6 @@ jobs:
           source: .
           targets: test
           pull: true
-      -
-        name: Upload coverage
-        uses: codecov/codecov-action@v5
-        with:
-          directory: ${{ env.DESTDIR }}/coverage
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   govulncheck:
     runs-on: ubuntu-latest
