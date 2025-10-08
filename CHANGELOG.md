@@ -1,5 +1,5 @@
 # Changelog
-
+ 
 ## 4.30.0 (2025/08/31)
 
 * Add TLS config options `tlsSkipVerify` and `tlsCaCertFiles` for all notifiers using an HTTP client (#1489)
