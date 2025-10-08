@@ -17,7 +17,7 @@ on:
   pull_request:
 
 env:
-  DOCKERHUB_SLUG: sebastian-bartkowiak/diun
+  DOCKERHUB_SLUG: siwy2411/diun
   GHCR_SLUG: ghcr.io/sebastian-bartkowiak/diun
   DESTDIR: ./bin
   DOCKER_BUILD_SUMMARY: false
