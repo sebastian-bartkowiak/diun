@@ -41,7 +41,6 @@ func getLast8Chars(digest string) string {
 	return digest
 }
 
-
 // Send creates and sends a mqtt notification with an entry
 func (c *Client) Send(entry model.NotifEntry) error {
 	username, err := utl.GetSecret(c.cfg.Username, c.cfg.UsernameFile)

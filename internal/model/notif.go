@@ -23,12 +23,12 @@ type NotifEntries struct {
 
 // NotifEntry represents a notification entry
 type NotifEntry struct {
-	Status   			ImageStatus       `json:"status,omitempty"`
-	Provider 			string            `json:"provider,omitempty"`
-	Image    			registry.Image    `json:"image,omitempty"`
-	Manifest 			registry.Manifest `json:"manifest,omitempty"`
-	PrevManifest 	registry.Manifest `json:"prevManifest,omitempty"`
-	Metadata 			map[string]string `json:"metadata,omitempty"`
+	Status        ImageStatus       `json:"status,omitempty"`
+	Provider      string            `json:"provider,omitempty"`
+	Image         registry.Image    `json:"image,omitempty"`
+	Manifest      registry.Manifest `json:"manifest,omitempty"`
+	PrevManifest  registry.Manifest `json:"prevManifest,omitempty"`
+	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
 // Notif holds data necessary for notification configuration
