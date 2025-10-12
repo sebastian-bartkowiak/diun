@@ -58,6 +58,8 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	imageStr := entry.Image.String()
 	// Extract the repository name (without version) and sanitize it
 	repoName := strings.Split(strings.Split(imageStr, ":")[0], "@")[0]
+	parts := strings.Split(repoName, "/")
+	extractedName := parts[len(parts)-1]
 	re := regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 	sanitizedImage := re.ReplaceAllString(repoName, "-")
 
@@ -87,9 +89,11 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	// Create & publish the discovery message
 	discoveryPayload := map[string]interface{}{
 		"state_topic":        stateTopic,
-		"name":               imageStr,
+		"name":               extractedName,
+		"title":              imageStr,
 		"unique_id":          sanitizedImage,
 		"availability_topic": availabilityTopic,
+		"icon":               "mdi:docker",
 		"device": map[string]interface{}{
 			"identifiers":  c.cfg.NodeName,
 			"name":         c.cfg.NodeName,
@@ -105,15 +109,16 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	}
 
 	// Prepare & the state payload
+	latestVersion := getLast8Chars(entry.Manifest.Digest.String())
 	var installedVersion string
 	if len(entry.PrevManifest.Digest.String()) > 0 {
 		installedVersion = getLast8Chars(entry.PrevManifest.Digest.String())
 	} else {
-		installedVersion = "unknown"
+		installedVersion = latestVersion
 	}
 	var statePayload = map[string]interface{}{
 		"installed_version": installedVersion,
-		"latest_version":    getLast8Chars(entry.Manifest.Digest.String()),
+		"latest_version":    latestVersion,
 	}
 	statePayloadBytes, err := json.Marshal(statePayload)
 	if err != nil {
