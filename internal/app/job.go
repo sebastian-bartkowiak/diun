@@ -224,9 +224,6 @@ func (di *Diun) runJob(job model.Job) (entry model.NotifEntry) {
 		return
 	}
 	sublog.Debug().Msg("Manifest saved to database")
-	if entry.Status == model.ImageStatusUnchange {
-		return
-	}
 
 	if job.FirstCheck && !*di.cfg.Watch.FirstCheckNotif {
 		sublog.Debug().Msg("Skipping notification (first check)")

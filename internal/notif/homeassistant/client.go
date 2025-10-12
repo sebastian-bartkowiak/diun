@@ -117,7 +117,7 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	if err != nil {
 		return err
 	}
-	if token := c.mqttClient.Publish(stateTopic, byte(c.cfg.QoS), false, statePayloadBytes); token.Wait() && token.Error() != nil {
+	if token := c.mqttClient.Publish(stateTopic, byte(c.cfg.QoS), true, statePayloadBytes); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
