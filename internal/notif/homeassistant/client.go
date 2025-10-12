@@ -85,14 +85,13 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	// Create & publish the discovery message
 	discoveryPayload := map[string]interface{}{
 		"state_topic":        stateTopic,
-		"name":               sanitizedImage,
+		"name":               imageStr,
 		"unique_id":          sanitizedImage,
-		"title":              imageStr,
 		"availability_topic": availabilityTopic,
 		"device": map[string]interface{}{
 			"identifiers":  c.cfg.NodeName,
 			"name":         c.cfg.NodeName,
-			"manufacturer": "Diun Image Update Notifier",
+			"manufacturer": "DIUN - Docker Image Update Notifier",
 		},
 	}
 	payloadBytes, err := json.Marshal(discoveryPayload)

@@ -41,8 +41,9 @@ type ImageStatus string
 
 // NotifyOn constants
 const (
-	NotifyOnNew    = NotifyOn(ImageStatusNew)
-	NotifyOnUpdate = NotifyOn(ImageStatusUpdate)
+	NotifyOnNew      = NotifyOn(ImageStatusNew)
+	NotifyOnUpdate   = NotifyOn(ImageStatusUpdate)
+	NotifyOnUnchange = NotifyOn(ImageStatusUnchange)
 )
 
 // NotifyOn holds notify status type
