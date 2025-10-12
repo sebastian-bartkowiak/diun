@@ -31,9 +31,9 @@ A message is sent on each run, even if there is no update or new image, this to 
 | `passwordFile`     |             | Use content of secret file as MQTT password if `password` not defined  |
 | `client`[^1]       |             | Client id to be used by this client when connecting to the MQTT broker |
 | `discoveryPrefix`  | `homeassistant` | Prefix for the discovery topic                                     |
-| `component`[^1]    | `sensor`    | Type of MQTT integration (e.g., `sensor`, `binary_sensor`)             |
+| `component`[^1]    | `update`    | Type of MQTT integration (e.g., `sensor`, `binary_sensor`)             |
 | `nodename`[^1]     | `diun`      | Node Name in HA (e.g, `diun`, `docker-hostname`                        |
-| `qos`              | `0`         | Ensured message delivery at specified Quality of Service (QoS)         |
+| `qos`              | `1`         | Ensured message delivery at specified Quality of Service (QoS)         |
 
 !!! abstract "Environment variables"
     * `DIUN_NOTIF_HOMEASSISTANT_SCHEME`

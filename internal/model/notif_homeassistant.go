@@ -28,7 +28,7 @@ func (s *NotifHomeAssistant) SetDefaults() {
 	s.Host = "localhost"
 	s.Port = 1883
 	s.DiscoveryPrefix = "homeassistant"
-	s.Component = "sensor"
+	s.Component = "update"
 	s.NodeName = "diun"
-	s.QoS = 0
+	s.QoS = 1
 }

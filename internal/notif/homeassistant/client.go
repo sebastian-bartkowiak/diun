@@ -34,6 +34,14 @@ func (c *Client) Name() string {
 	return "homeassistant"
 }
 
+func getLast8Chars(digest string) string {
+	if len(digest) >= 8 {
+		return digest[len(digest)-8:]
+	}
+	return digest
+}
+
+
 // Send creates and sends a mqtt notification with an entry
 func (c *Client) Send(entry model.NotifEntry) error {
 	username, err := utl.GetSecret(c.cfg.Username, c.cfg.UsernameFile)
@@ -46,88 +54,75 @@ func (c *Client) Send(entry model.NotifEntry) error {
 		return err
 	}
 
-	broker := fmt.Sprintf("%s://%s:%d", c.cfg.Scheme, c.cfg.Host, c.cfg.Port)
-	opts := MQTT.NewClientOptions().AddBroker(broker).SetClientID(c.cfg.Client)
-	opts.Username = username
-	opts.Password = password
-
-	if c.mqttClient == nil {
-		c.mqttClient = MQTT.NewClient(opts)
-		if token := c.mqttClient.Connect(); token.Wait() && token.Error() != nil {
-			return token.Error()
-		}
-	}
-
 	// Extract the image string
 	imageStr := entry.Image.String()
 	// Extract the repository name (without version) and sanitize it
 	repoName := strings.Split(imageStr, ":")[0]
-	sanitizedImage := strings.ReplaceAll(repoName, "/", "_")
+	sanitizedImage := strings.ReplaceAll(strings.ReplaceAll(repoName, "/", "_"), ".", "-")
 
-	// Define the discovery topic
+	// Define the topics
+	availabilityTopic := fmt.Sprintf("%s/%s/%s/%s/availability", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
 	discoveryTopic := fmt.Sprintf("%s/%s/%s/%s/config", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
+	stateTopic := fmt.Sprintf("%s/%s/%s/%s/state", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
 
-	// Create the discovery payload
-	discoveryPayload := map[string]interface{}{
-		"name":                  sanitizedImage,
-		"unique_id":             sanitizedImage,
-		"state_topic":           fmt.Sprintf("%s/%s/%s/%s/config", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage),
-		"json_attributes_topic": fmt.Sprintf("%s/%s/%s/%s/config", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage),
-		"availability_topic":    "homeassistant/status",
-		"device": map[string]interface{}{
-			"identifiers":  sanitizedImage,
-			"name":         sanitizedImage,
-			"sw_version":   "1.0",
-			"model":        "MQTT Sensor",
-			"manufacturer": "Diun Image Update Notifier",
-		},
-	}
+	broker := fmt.Sprintf("%s://%s:%d", c.cfg.Scheme, c.cfg.Host, c.cfg.Port)
+	opts := MQTT.NewClientOptions().AddBroker(broker).SetClientID(c.cfg.Client).SetWill(availabilityTopic, "offline", byte(c.cfg.QoS), true)
+	opts.Username = username
+	opts.Password = password
 
-	payloadBytes, err := json.Marshal(discoveryPayload)
-	if err != nil {
-		return err
-	}
-
-	// Publish the discovery message
-	token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes)
-	token.Wait()
-	if token.Error() != nil {
-		return token.Error()
-	}
-
-	// Prepare the state payload
-	var statePayload map[string]interface{}
-	switch entry.Status {
-	case "new":
-		statePayload = map[string]interface{}{
-			"state":           "New Image",
-			"current_version": entry.Image,
-			"new_version":     "",
-			"icon":            "mdi:package-variant",
+	if c.mqttClient == nil {
+		// Create the client
+		c.mqttClient = MQTT.NewClient(opts)
+		if token := c.mqttClient.Connect(); token.Wait() && token.Error() != nil {
+			return token.Error()
 		}
-	case "update":
-		statePayload = map[string]interface{}{
-			"state":           "Update Available",
-			"current_version": entry.Image,
-			"new_version":     entry.Image,
-			"icon":            "mdi:package-up",
+
+		// Create & publish the availability message
+		token = c.mqttClient.Publish(availabilityTopic, byte(c.cfg.QoS), true, "online")
+		token.Wait()
+		if token.Error() != nil {
+			return token.Error()
 		}
-	default:
-		statePayload = map[string]interface{}{
-			"state":           "No Update",
-			"current_version": entry.Image,
-			"new_version":     "",
-			"icon":            "mdi:package-variant-closed",
+
+		// Create & publish the discovery message
+		discoveryPayload := map[string]interface{}{
+			"state_topic":  					stateTopic,
+			"name":                  	sanitizedImage,
+			"unique_id":             	sanitizedImage,
+			"title":                 	imageStr,
+			"availability_topic":    	availabilityTopic,
+			"device": map[string]interface{}{
+				"identifiers":  				c.cfg.NodeName,
+				"name":         				c.cfg.NodeName,
+				"manufacturer": 				"Diun Image Update Notifier",
+			},
+		}
+		payloadBytes, err := json.Marshal(discoveryPayload)
+		if err != nil {
+			return err
+		}
+		token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes)
+		token.Wait()
+		if token.Error() != nil {
+			return token.Error()
 		}
 	}
 
+	// Prepare & the state payload
+	var installedVersion string
+	if len(entry.PrevManifest.Digest.String()) > 0 {
+		installedVersion = getLast8Chars(entry.PrevManifest.Digest.String())
+	} else {
+		installedVersion = "unknown"
+	}
+	var statePayload = map[string]interface{}{
+		"installed_version": installedVersion,
+		"latest_version":    getLast8Chars(entry.Manifest.Digest.String()),
+	}
 	statePayloadBytes, err := json.Marshal(statePayload)
 	if err != nil {
 		return err
 	}
-
-	// Publish the state message
-	stateTopic := fmt.Sprintf("%s/%s/%s/%s/config", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
 	token = c.mqttClient.Publish(stateTopic, byte(c.cfg.QoS), false, statePayloadBytes)
 	token.Wait()
 	if token.Error() != nil {

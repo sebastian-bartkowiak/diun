@@ -192,6 +192,7 @@ func (di *Diun) runJob(job model.Job) (entry model.NotifEntry) {
 		sublog.Error().Err(err).Msg("Cannot get manifest from db")
 		return
 	}
+	entry.PrevManifest = dbManifest
 
 	var updated bool
 	entry.Manifest, updated, err = job.Registry.Manifest(job.RegImage, dbManifest)
