@@ -3,6 +3,7 @@ package homeassistant
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/crazy-max/diun/v4/internal/model"
@@ -56,8 +57,9 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	// Extract the image string
 	imageStr := entry.Image.String()
 	// Extract the repository name (without version) and sanitize it
-	repoName := strings.Split(imageStr, ":")[0]
-	sanitizedImage := strings.ReplaceAll(strings.ReplaceAll(repoName, "/", "_"), ".", "-")
+	repoName := strings.Split(strings.Split(imageStr, ":")[0], "@")[0]
+	re := regexp.MustCompile(`[^a-zA-Z0-9_-]`)
+	sanitizedImage := re.ReplaceAllString(repoName, "-")
 
 	// Define the topics
 	availabilityTopic := fmt.Sprintf("%s/%s/%s/availability", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName)
