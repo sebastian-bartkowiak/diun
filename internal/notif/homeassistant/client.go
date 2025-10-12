@@ -60,7 +60,7 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	sanitizedImage := strings.ReplaceAll(strings.ReplaceAll(repoName, "/", "_"), ".", "-")
 
 	// Define the topics
-	availabilityTopic := fmt.Sprintf("%s/%s/%s/%s/availability", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
+	availabilityTopic := fmt.Sprintf("%s/%s/%s/availability", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName)
 	discoveryTopic := fmt.Sprintf("%s/%s/%s/%s/config", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
 	stateTopic := fmt.Sprintf("%s/%s/%s/%s/state", c.cfg.DiscoveryPrefix, c.cfg.Component, c.cfg.NodeName, sanitizedImage)
 
@@ -80,27 +80,27 @@ func (c *Client) Send(entry model.NotifEntry) error {
 		if token := c.mqttClient.Publish(availabilityTopic, byte(c.cfg.QoS), true, "online"); token.Wait() && token.Error() != nil {
 			return token.Error()
 		}
+	}
 
-		// Create & publish the discovery message
-		discoveryPayload := map[string]interface{}{
-			"state_topic":        stateTopic,
-			"name":               sanitizedImage,
-			"unique_id":          sanitizedImage,
-			"title":              imageStr,
-			"availability_topic": availabilityTopic,
-			"device": map[string]interface{}{
-				"identifiers":  c.cfg.NodeName,
-				"name":         c.cfg.NodeName,
-				"manufacturer": "Diun Image Update Notifier",
-			},
-		}
-		payloadBytes, err := json.Marshal(discoveryPayload)
-		if err != nil {
-			return err
-		}
-		if token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes); token.Wait() && token.Error() != nil {
-			return token.Error()
-		}
+	// Create & publish the discovery message
+	discoveryPayload := map[string]interface{}{
+		"state_topic":        stateTopic,
+		"name":               sanitizedImage,
+		"unique_id":          sanitizedImage,
+		"title":              imageStr,
+		"availability_topic": availabilityTopic,
+		"device": map[string]interface{}{
+			"identifiers":  c.cfg.NodeName,
+			"name":         c.cfg.NodeName,
+			"manufacturer": "Diun Image Update Notifier",
+		},
+	}
+	payloadBytes, err := json.Marshal(discoveryPayload)
+	if err != nil {
+		return err
+	}
+	if token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes); token.Wait() && token.Error() != nil {
+		return token.Error()
 	}
 
 	// Prepare & the state payload
