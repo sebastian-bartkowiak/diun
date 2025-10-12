@@ -78,9 +78,7 @@ func (c *Client) Send(entry model.NotifEntry) error {
 		}
 
 		// Create & publish the availability message
-		token = c.mqttClient.Publish(availabilityTopic, byte(c.cfg.QoS), true, "online")
-		token.Wait()
-		if token.Error() != nil {
+		if token := c.mqttClient.Publish(availabilityTopic, byte(c.cfg.QoS), true, "online"); token.Wait() && token.Error() != nil {
 			return token.Error()
 		}
 
@@ -101,9 +99,7 @@ func (c *Client) Send(entry model.NotifEntry) error {
 		if err != nil {
 			return err
 		}
-		token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes)
-		token.Wait()
-		if token.Error() != nil {
+		if token := c.mqttClient.Publish(discoveryTopic, byte(c.cfg.QoS), true, payloadBytes); token.Wait() && token.Error() != nil {
 			return token.Error()
 		}
 	}
@@ -123,9 +119,7 @@ func (c *Client) Send(entry model.NotifEntry) error {
 	if err != nil {
 		return err
 	}
-	token = c.mqttClient.Publish(stateTopic, byte(c.cfg.QoS), false, statePayloadBytes)
-	token.Wait()
-	if token.Error() != nil {
+	if token := c.mqttClient.Publish(stateTopic, byte(c.cfg.QoS), false, statePayloadBytes); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
